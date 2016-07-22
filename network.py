@@ -3,6 +3,7 @@
 import networkx as nx
 from networkx.readwrite import json_graph
 import json, community
+from networkx.algorithms import centrality as cn
 
 with open('marvel_nodes.csv') as nodecsv:
     rows = nodecsv.read().split('\r\n')
@@ -32,9 +33,15 @@ G = nx.Graph()
 G.add_nodes_from(node_ids)
 G.add_weighted_edges_from(edges)
 groups = community.best_partition(G)
+degree = cn.degree_centrality(G)
+betweenness = cn.betweenness_centrality(G, weight='weight')
+eigenvector = cn.eigenvector_centrality(G, weight='weight')
 
 nx.set_node_attributes(G, 'name', node_dict)
 nx.set_node_attributes(G, 'group', groups)
+nx.set_node_attributes(G, 'degree', degree)
+nx.set_node_attributes(G, 'betweenness', betweenness)
+nx.set_node_attributes(G, 'eigenvector', eigenvector)
 
 data = json_graph.node_link_data(G)
 #id_with_name = {i:d['id'] for i,d in enumerate(data['nodes'])}
