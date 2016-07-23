@@ -38,7 +38,7 @@ var gravityScale = d3.scaleLinear()
 	
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink())//.id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength([-120]))
+    .force("charge", d3.forceManyBody().strength([-120]).distanceMax([500]))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 var container = svg.append('g');
@@ -54,6 +54,8 @@ var button = search.append('input')
 	.attr('type', 'button')
 	.attr('value', 'Search')
 	.on('click', function () { searchNodes(); });
+
+var toggle = 0;
 
 
 d3.json("marvel.json", function(error, graph) {
@@ -85,22 +87,27 @@ d3.json("marvel.json", function(error, graph) {
     .selectAll("circle")
     .data(graph.nodes)
     .enter().append("circle")
+    // Calculate degree centrality within JavaScript.
     //.attr("r", function(d, i) { count = 0; graph.links.forEach(function(l) { if (l.source == i || l.target == i) { count += 1;}; }); return size(count);})
     .attr('r', function(d, i) { return degreeSize(d.degree); })
       .attr("fill", function(d) { return color(d.group); })
       .attr('class', 'node')
-      .on('mouseover', function(d, i) {
-	      d3.selectAll('.link').style('stroke-opacity', function (l) {
-		      return l.target == d || l.source == d ? 1 : 0.1;
-	      });
-	      d3.selectAll('.node').style('opacity', function (n) {
-		      return neighboring(d, n) ? 1 : 0.1;
-	      });
-	      d3.select(this).style('opacity', 1);
-      })
-      .on('mouseout', function() {
-	      d3.selectAll('.link').style('stroke-opacity', '0.6');
-	      d3.selectAll('.node').style('opacity', '1');
+      .on('click', function(d, i) {
+	      if (toggle == 0) {
+		      d3.selectAll('.link').style('stroke-opacity', function (l) {
+			      return l.target == d || l.source == d ? 1 : 0.1;
+		      });
+		      d3.selectAll('.node').style('opacity', function (n) {
+			      return neighboring(d, n) ? 1 : 0.1;
+		      });
+		      d3.select(this).style('opacity', 1);
+		      toggle = 1;
+	      }
+	      else {
+		      d3.selectAll('.link').style('stroke-opacity', '0.6');
+		      d3.selectAll('.node').style('opacity', '1');
+		      toggle = 0;
+	      }
       })
       .call(d3.drag()
           .on("start", dragstarted)
