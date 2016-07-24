@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-
+#! /usr/bin/env python3 
 import networkx as nx
 from networkx.readwrite import json_graph
 import json, community
@@ -9,12 +8,13 @@ from networkx.algorithms import centrality as cn
 
 # Creates dictionary of id:name pairs.
 with open('marvel_nodes.csv') as nodecsv:
-    rows = nodecsv.read().split('\r\n')
+    rows = nodecsv.read().split('\n')
+    print(rows)
     node_dict = {}
     for r in rows[1:]:
         r = r.split(',')
         node_dict[r[0]] = r[1]
-    print node_dict
+    print(node_dict)
 
 
 node_dict={k:v.title() for k,v in node_dict.items()}
@@ -23,7 +23,7 @@ nodes = node_dict.values()
 
 # Creates tuples with source, target, and weight.
 with open('marvel_edges.csv') as edgecsv:
-    rows = edgecsv.read().split('\r\n')
+    rows = edgecsv.read().split('\n')
     edges = [r.split(',')[:2] for r in rows[1:]]
     weights = [r.split(',')[-1] for r in rows[1:]]
     edge_tuples=[(e[0], e[1], int(weights[i])) for i,e in enumerate(edges)]
@@ -31,12 +31,12 @@ with open('marvel_edges.csv') as edgecsv:
 # Only get edges for the select nodes in the node csv.
 edges = []
 for e in edge_tuples:
-    if all(x in node_ids for x in e[:2]):
+    if all(x in list(node_ids) for x in e[:2]):
         edges.append(e)
 
 # Initialize graph, add nodes and edges, calculate modularity and centrality.
 G = nx.Graph()
-G.add_nodes_from(node_ids)
+G.add_nodes_from(list(node_ids))
 G.add_weighted_edges_from(edges)
 groups = community.best_partition(G)
 degree = cn.degree_centrality(G)
